@@ -1,0 +1,17 @@
+{
+  "name": "social-network-api",
+  "version": "1.0.0",
+  "description": "NoSQL bak-end project",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server",
+    "seed": "node utils/seed"
+  },
+  "keywords": ["MongoDB", "Mongoose"],
+  "author": "Mtan1230",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "mongoose": "^7.4.3"
+  }
+}
