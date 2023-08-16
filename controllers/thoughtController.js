@@ -18,12 +18,13 @@ module.exports = {
         return res.status(404).json({ message: 'No user with that username' });
       }
 
-      const thought = new Thought({
+      const thought = await Thought.create({
         thoughtText: req.body.thoughtText,
         username: user.username,
       });
-      await thought.save();
-      await user.thoughts.push(thought._id).save();
+
+      await User.updateOne({ _id: user._id }, { $addToSet: { thoughts: thought._id } });
+
       res.json(thought);
     } catch (err) {
       res.status(500).json(err);
@@ -82,7 +83,7 @@ module.exports = {
 
   async createReaction(req, res) {
     try {
-      const thought = await Thought.find({ _id: req.params.thoughtId });
+      const thought = await Thought.findOne({ _id: req.params.thoughtId });
 
       if (!thought) {
         return res.status(404).json({ message: 'No thought with that ID' });
@@ -93,14 +94,13 @@ module.exports = {
       if (!user) {
         return res.status(404).json({ message: 'No user with that username' });
       }
-
+      
       const reaction = {
         reactionBody: req.body.reactionBody,
         username: req.body.username,
       };
-
-      await thought.reactions.push(reaction).save();
-      res.json({ reaction: thought.reactions.at(-2), message: 'Reaction created!' });
+      const updatedThought = await Thought.findByIdAndUpdate({ _id: thought._id }, { $addToSet: { reactions: reaction } }, { new: true });
+      res.json({ updatedThought, message: 'Reaction created!' });
     } catch (err) {
       res.status(500).json(err);
     }
@@ -110,7 +110,7 @@ module.exports = {
     try {
       const thought = await Thought.findOneAndUpdate(
         { _id: req.params.thoughtId },
-        { $pull: { reactions: req.body.reactionId } },
+        { $pull: { reactions: {reactionId: req.body.reactionId} } },
         { new: true }
       );
 
