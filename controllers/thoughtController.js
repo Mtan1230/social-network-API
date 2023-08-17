@@ -3,7 +3,7 @@ const { User, Thought } = require('../models');
 module.exports = {
   async getThoughts(req, res) {
     try {
-      const thoughts = await Thought.find();
+      const thoughts = await Thought.find().select('-__v -reactions._id');
       res.json(thoughts);
     } catch (err) {
       res.status(500).json(err);
@@ -33,7 +33,7 @@ module.exports = {
 
   async getSingleThought(req, res) {
     try {
-      const thought = await Thought.findOne({ _id: req.params.thoughtId });
+      const thought = await Thought.findOne({ _id: req.params.thoughtId }).select('-__v -reactions._id');
 
       if (!thought) {
         return res.status(404).json({ message: 'No thought with that ID' });
@@ -83,24 +83,23 @@ module.exports = {
 
   async createReaction(req, res) {
     try {
-      const thought = await Thought.findOne({ _id: req.params.thoughtId });
-
-      if (!thought) {
-        return res.status(404).json({ message: 'No thought with that ID' });
-      }
-
       const user = await User.findOne({ username: req.body.username });
 
       if (!user) {
         return res.status(404).json({ message: 'No user with that username' });
       }
-      
+
       const reaction = {
         reactionBody: req.body.reactionBody,
         username: req.body.username,
       };
-      const updatedThought = await Thought.findByIdAndUpdate({ _id: thought._id }, { $addToSet: { reactions: reaction } }, { new: true });
-      res.json({ updatedThought, message: 'Reaction created!' });
+      const thought = await Thought.findByIdAndUpdate({ _id: req.params.thoughtId }, { $addToSet: { reactions: reaction } }, { new: true });
+
+      if (!thought) {
+        return res.status(404).json({ message: 'No thought with that ID' });
+      }
+
+      res.json({ thought, message: 'Reaction created!' });
     } catch (err) {
       res.status(500).json(err);
     }
@@ -110,7 +109,7 @@ module.exports = {
     try {
       const thought = await Thought.findOneAndUpdate(
         { _id: req.params.thoughtId },
-        { $pull: { reactions: {reactionId: req.body.reactionId} } },
+        { $pull: { reactions: { reactionId: req.body.reactionId } } },
         { new: true }
       );
 
