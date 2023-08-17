@@ -4,8 +4,7 @@
   "description": "NoSQL bak-end project",
   "main": "server.js",
   "scripts": {
-    "start": "node server",
-    "seed": "node utils/seed"
+    "start": "node server"
   },
   "keywords": ["MongoDB", "Mongoose"],
   "author": "Mtan1230",
