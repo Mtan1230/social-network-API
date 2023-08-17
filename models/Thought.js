@@ -20,6 +20,12 @@ const reactionSchema = new Schema(
       default: Date.now,
       get: formatDateTime,
     },
+  },
+  {
+    toJSON: {
+      getters: true,
+    },
+    id: false,
   }
 );
 
@@ -40,11 +46,18 @@ const thoughtSchema = new Schema(
       required: true,
     },
     reactions: [reactionSchema],
+  },
+  {
+    toJSON: {
+      getters: true,
+      virtuals: true,
+    },
+    id: false,
   }
 );
 
 function formatDateTime(date) {
-  return `${date.getMonth() + 1} ${date.getDate()}, ${date.getFullYear()} at ${date.toLocaleTimeString()}`;
+  return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()} ${date.toLocaleTimeString()}`;
 }
 
 thoughtSchema
